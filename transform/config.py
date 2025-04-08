@@ -21,6 +21,10 @@ from .transform_if_return import *
 from .transform_if_switch import *
 from .transform_if_nested import *
 from .transform_if_else import *
+from .transform_func_nested import *
+from .transform_ternary import *
+from .transform_recursive_iterative import *
+
 
 transformation_operators = {
     "tokensub": {
@@ -150,4 +154,18 @@ transformation_operators = {
         "not_else": (),
         "else": (match_if_add_else, cvt_add_else),
     },
+    "func_nested": {
+        "nested": (match_func_nested, cvt_func_nested, count_func_nested),
+        "not_nested": (match_func_not_nested, cvt_func_not_nested, count_func_not_nested),
+    },
+    "recursive_iterative": {
+        "to_iterative": (match_recursive_functions, convert_recursive_to_iterative, count_recursive_functions),
+        "to_recursive": (match_iterative_functions, convert_iterative_to_recursive, count_iterative_functions),
+    },
+    "ternary": {
+        "to_ternary": (match_if_to_ternary, convert_if_to_ternary, count_if_to_ternary),
+        "to_if": (match_ternary_to_if, convert_ternary_to_if, count_ternary_to_if),
+    },
 }
+
+
