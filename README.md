@@ -71,3 +71,16 @@ python CFG.py
 ```
 
 ![捕获](https://github.com/rebibabo/SCTS/assets/80667434/ef06409b-4cb9-45ed-be69-4b28760546ce)
+
+
+# Batch_sample Generator 
+We have built a batch sample generator based on code equivalence transformations implemented with Tree-sitter. [Here](./Conversion_type.md) is a summary of the types of equivalence transformations
+, followed by usage instructions for the sample generator.
+
+The sample generator can be run directly and input the paramenters through graphical interface
+
+or provide them directly
+
+```
+python BatchSample_Generator.py --dpa "./dataset/programs/C" --trans "11.1 9.2" --opa "./converted_dataset" 
+```

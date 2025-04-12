@@ -215,7 +215,7 @@ class IST:
                     if op is not None:
                         operations.extend(op)
 
-                print(f'Operations: {operations}')
+                #print(f'Operations: {operations}')
                 code = replace_from_blob(operations, code)
             succ = raw_code.replace(" ", "").replace("\n", "").replace(
                 "\t", ""
@@ -263,13 +263,13 @@ class IST:
 
 if __name__ == "__main__":
 
-    test_code_url = "test_code/test1.txt"
+    test_code_url = "test_code/test.c"
     with open(test_code_url, "r") as f:
         code = f.read()
 
     ist = IST("c")
     # ? -3.1 -1.1 0.5 7.2 8.1 9.1 11.3 3.4 4.4 10.7
-    style = "21.1"
+    style = "11.1"
 
     ist.see_tree(code)
 
