@@ -82,5 +82,5 @@ The sample generator can be run directly and input the paramenters through graph
 or provide them directly
 
 ```
-python BatchSample_Generator.py --dpa "./dataset/programs/C" --trans "11.1 9.2" --opa "./converted_dataset" 
+python BatchSample_Generator.py --dpath "./dataset/programs/C" --trans "11.1 9.2" --opath "./converted_dataset" 
 ```
