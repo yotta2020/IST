@@ -78,10 +78,9 @@ We have built a batch sample generator based on code equivalence transformations
 , followed by simple usage instructions for the sample generator.
 
 The sample generator can be run directly and input the paramenters through graphical interface
-
 or provide them directly
 
 ```
-python BatchSample_Generator.py --dpath "./dataset/programs/C" --trans "11.1 9.2" --opath "./converted_dataset" 
+python BatchSample_Generator.py --dpath "./dataset/programs/C" --trans 11.1 9.2 
 ```
 You can get detailed usage through our user [manul](./user_manual.md)
