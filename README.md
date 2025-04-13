@@ -75,7 +75,7 @@ python CFG.py
 
 # Batch_sample Generator 
 We have built a batch sample generator based on code equivalence transformations implemented with Tree-sitter. [Here](./Conversion_type.md) is a summary of the types of equivalence transformations
-, followed by usage instructions for the sample generator.
+, followed by simple usage instructions for the sample generator.
 
 The sample generator can be run directly and input the paramenters through graphical interface
 
@@ -84,3 +84,4 @@ or provide them directly
 ```
 python BatchSample_Generator.py --dpath "./dataset/programs/C" --trans "11.1 9.2" --opath "./converted_dataset" 
 ```
+You can get detailed usage through our user [manul](./user_manual.md)
