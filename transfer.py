@@ -8,6 +8,7 @@ import subprocess
 from ist_utils import *
 from tqdm import tqdm
 from tree_sitter import Parser, Language
+from seeTree import *
 
 
 class IST:
@@ -65,6 +66,8 @@ class IST:
             "0.6": ("aabb", "$aabb"),
             "1.1": ("if/for/while {...}", "if/for/while ..."),
             "1.2": ("if/for/while ...", "if/for/while {...}"),
+            "21.1": ("recursive function", "iterative function"),
+            "21.2": ("iterative function", "recursive function"),
         }
 
         self.style_dict = {
@@ -133,6 +136,12 @@ class IST:
             "17.2": ("if_nested", "nested"),
             "18.1": ("if_else", "not_else"),
             "18.2": ("if_else", "else"),
+            "19.1": ("ternary", "to_ternary"),  # 基本if-else转三元运算符
+            "19.2": ("ternary", "to_if"),  # 基本三元运算符转if-else
+            "20.1": ("func_nested", "nested"),
+            "20.2": ("func_nested", "not_nested"),
+            "21.1": ("recursive_iterative", "to_iterative"),
+            "21.2": ("recursive_iterative", "to_recursive"),
         }
 
         self.need_bracket = ["10", "11", "12", "17"]
@@ -177,15 +186,37 @@ class IST:
             match_nodes = match_func(AST.root_node)
             if len(match_nodes) == 0:
                 return code, style == "0.0"
-            for node in match_nodes:
-                if get_parameter_count(convert_func) == 1:
-                    op = convert_func(node)
-                else:
-                    op = convert_func(node, code)
-                if op is not None:
-                    operations.extend(op)
 
-            code = replace_from_blob(operations, code)
+            # 对于特定风格使用动态AST解析
+            dynamic_styles = ["20.1", "20.2"]
+            if style in dynamic_styles:
+                while len(match_nodes) > 0:
+                    # 每次只处理第一个匹配的节点
+                    node = match_nodes[0]
+                    if get_parameter_count(convert_func) == 1:
+                        op = convert_func(node)
+                    else:
+                        op = convert_func(node, code)
+                    if op is not None:
+                        operations.extend(op)
+                        # 应用当前操作并重新解析AST
+                        code = replace_from_blob(operations, code)
+                        operations = []
+                        # 重新获取匹配节点
+                        AST = self.parser.parse(bytes(code, encoding="utf-8"))
+                        match_nodes = match_func(AST.root_node)
+            else:
+                # 原有的批量处理逻辑
+                for node in match_nodes:
+                    if get_parameter_count(convert_func) == 1:
+                        op = convert_func(node)
+                    else:
+                        op = convert_func(node, code)
+                    if op is not None:
+                        operations.extend(op)
+
+                #print(f'Operations: {operations}')
+                code = replace_from_blob(operations, code)
             succ = raw_code.replace(" ", "").replace("\n", "").replace(
                 "\t", ""
             ) != code.replace(" ", "").replace("\n", "").replace("\t", "")
@@ -223,14 +254,24 @@ class IST:
         AST = self.parser.parse(bytes(code, encoding="utf-8"))
         return not AST.root_node.has_error
 
+    def see_tree(self, code):
+        AST = self.parser.parse(bytes(code, encoding="utf-8"))
+        root_node = AST.root_node
+        node_list, edge_list = ast_bfs(root = root_node)
+        dot = draw_tree("AST", node_list, edge_list)
+        dot.render("AST", format="png")
 
 if __name__ == "__main__":
-    with open("./test_code/test.c", "r") as f:
+
+    test_code_url = "test_code/test.c"
+    with open(test_code_url, "r") as f:
         code = f.read()
 
     ist = IST("c")
     # ? -3.1 -1.1 0.5 7.2 8.1 9.1 11.3 3.4 4.4 10.7
-    style = "10.7"
+    style = "11.1"
+
+    ist.see_tree(code)
 
     pcode, succ = ist.transfer(code=code, styles=[style])
     print(f"succ = {succ}")
