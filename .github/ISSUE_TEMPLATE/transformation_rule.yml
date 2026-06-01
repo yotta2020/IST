@@ -1,0 +1,36 @@
+name: Transformation rule request
+description: Propose a new semantics-preserving transformation or rule improvement.
+title: "[Rule]: "
+labels: ["enhancement", "transformation"]
+body:
+  - type: dropdown
+    id: language
+    attributes:
+      label: Target language
+      options:
+        - c
+        - java
+        - python
+        - c_sharp
+        - other
+    validations:
+      required: true
+  - type: textarea
+    id: transformation
+    attributes:
+      label: Proposed transformation
+      description: Show before and after code if possible.
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: equivalence
+    attributes:
+      label: Why is it semantics-preserving?
+    validations:
+      required: true
+  - type: textarea
+    id: use_case
+    attributes:
+      label: Research or engineering use case
+      placeholder: "Robustness testing, clone detection, dataset augmentation, etc."

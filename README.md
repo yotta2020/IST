@@ -1,10 +1,31 @@
-# Environment
+# IST
+
+[![Smoke tests](https://github.com/yotta2020/IST/actions/workflows/smoke.yml/badge.svg)](https://github.com/yotta2020/IST/actions/workflows/smoke.yml)
+
+IST is a tree-sitter-based toolkit for semantics-preserving code style
+transformations. It is designed for ML4Code and code-security research,
+including adversarial robustness evaluation, backdoor and poisoning analysis,
+clone-detection augmentation, and code dataset expansion.
+
+## Project Status
+
+This repository is actively maintained as an open-source research tool. Current
+maintenance work focuses on reproducible setup, smoke tests, public benchmark
+samples, clearer transformation documentation, and safer handling of dual-use
+research workflows.
+
+- [Roadmap](./ROADMAP.md)
+- [Contributing guide](./CONTRIBUTING.md)
+- [Security policy](./SECURITY.md)
+
+## Environment
 
 ```
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -U pip
 python -m pip install -r requirements.txt
+python scripts/smoke_test.py
 ```
 
 Install the Graphviz system package only if you need AST image rendering through
@@ -22,13 +43,21 @@ brew install graphviz
 
 Need to download [Visual Studio Build Tools](https://visualstudio.microsoft.com/zh-hans/visual-cpp-build-tools/)
 
-# Introduction
+## Introduction
 
 IST is the abbreviation for **S**tyle **C**hange by **T**ree **S**itter, this tool aims to change a program to a specific style through tree-sitter.
 Up till now, it can change C/C++/python with 148 rules, and it can also show the visual AST tree with graphviz and tokenize the code.
 It will be continuous updated...
 
-# How to use
+## Responsible Use
+
+IST can be used in dual-use security research. The project is intended for
+defensive and reproducible work such as robustness evaluation, benchmark
+construction, clone detection, and controlled analysis of backdoor or poisoning
+risks. Do not use IST to hide malicious behavior, evade review, or attack
+systems without authorization.
+
+## How to use
 
 This code is to define a class IST, the parametre is the language of the codes.
 
@@ -86,7 +115,7 @@ python CFG.py
 ![捕获](https://github.com/rebibabo/SCTS/assets/80667434/ef06409b-4cb9-45ed-be69-4b28760546ce)
 
 
-# Batch_sample Generator 
+## Batch_sample Generator
 We have built a batch sample generator based on code equivalence transformations implemented with Tree-sitter. [Here](./Conversion_type.md) is a summary of the types of equivalence transformations
 , followed by simple usage instructions for the sample generator.
 

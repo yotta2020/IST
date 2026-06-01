@@ -1,0 +1,26 @@
+name: Research use case
+description: Share how IST is used in a paper, benchmark, dataset, or experiment.
+title: "[Use case]: "
+labels: ["research", "use-case"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What are you using IST for?
+    validations:
+      required: true
+  - type: textarea
+    id: dataset
+    attributes:
+      label: Dataset or benchmark
+      placeholder: "HumanEval-X, CodeXGLUE, clone-detection corpus, etc."
+  - type: textarea
+    id: transformations
+    attributes:
+      label: Transformation IDs or categories
+  - type: textarea
+    id: citation
+    attributes:
+      label: Citation or project link
+      description: Optional, if public.

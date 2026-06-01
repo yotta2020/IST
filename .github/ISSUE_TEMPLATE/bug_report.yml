@@ -1,0 +1,46 @@
+name: Bug report
+description: Report a parser, transformation, CLI, or dataset-processing problem.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: dropdown
+    id: language
+    attributes:
+      label: Language
+      options:
+        - c
+        - java
+        - python
+        - c_sharp
+        - other
+    validations:
+      required: true
+  - type: input
+    id: style
+    attributes:
+      label: Transformation style ID
+      placeholder: "Example: 11.2"
+  - type: textarea
+    id: input
+    attributes:
+      label: Minimal input code
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      placeholder: "OS, Python version, IST commit, command used"
