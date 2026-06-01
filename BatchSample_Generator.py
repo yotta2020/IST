@@ -1,22 +1,31 @@
 import os
 import sys
 import argparse
-import tkinter as tk
-from tkinter import filedialog, messagebox, ttk
 import json
 import logging
 import pandas as pd
-from typing import List, Dict
-from datetime import datetime
+from typing import List
 from datasets import Dataset, Features, Value
 
 from transfer import IST  
 
+try:
+    import tkinter as tk
+    from tkinter import filedialog, messagebox, ttk
+except ImportError:
+    tk = None
+    filedialog = messagebox = ttk = None
+
+
 class CodeTransformerGUI:
-    def __init__(self, root):
-        self.root = root
-        self.root.title("Code Transformer")
-        self.root.geometry("800x600")
+    def __init__(self, root=None, init_gui=True):
+        if init_gui and tk is None:
+            raise RuntimeError("Tkinter is required for GUI mode. Use CLI arguments for headless mode.")
+
+        self.root = root or (tk.Tk() if init_gui else None)
+        if init_gui:
+            self.root.title("Code Transformer")
+            self.root.geometry("800x600")
         self.language = "c"
         self.dataset_file = ""
         self.transformations = []
@@ -26,30 +35,8 @@ class CodeTransformerGUI:
         self.selected_fields = []
         self.verbose_logging = False
         self.output_format = "jsonl"  # Default output format
-        self.ist = IST(self.language)
-        # Supported transformation styles (mock list, adjust based on IST)
-        self.supported_styles = [
-    "-3.1", "-2.1", "-2.2", "-2.3", "-2.4",
-    "-1.1", "-1.2", "-1.3",
-    "0.0", "0.1", "0.2", "0.3", "0.4", "0.5", "0.6",
-    "1.1", "1.2", "2.1", "2.2",
-    "3.1", "3.2", "3.3", "3.4",
-    "4.1", "4.2", "4.3", "4.4",
-    "5.1", "5.2", "6.1", "6.2",
-    "7.1", "7.2", "8.1", "8.2",
-    "9.1", "9.2", "10.0", "10.1", "10.2", "10.3", "10.4", "10.5", "10.6", "10.7",
-    "11.1", "11.2", "11.3", "11.4",
-    "12.1", "12.2", "12.3", "12.4",
-    "13.1", "13.2",
-    "14.1", "14.2",
-    "15.1", "15.2",
-    "16.1", "16.2",
-    "17.1", "17.2",
-    "18.1", "18.2",
-    "19.1", "19.2",
-    "20.1", "20.2",
-    "21.1", "21.2"
-]
+        self.ist = IST(self.language) if init_gui else None
+        self.supported_styles = self.ist.get_supported_styles() if self.ist else []
 
         # Setup logging
         logging.basicConfig(
@@ -59,8 +46,8 @@ class CodeTransformerGUI:
         )
         self.logger = logging.getLogger()
 
-        # GUI Layout
-        self._setup_gui()
+        if init_gui:
+            self._setup_gui()
 
     def _setup_gui(self):
         main_frame = ttk.Frame(self.root, padding="10")
@@ -126,6 +113,7 @@ class CodeTransformerGUI:
     def _update_language(self, value):
         self.language = value
         self.ist = IST(self.language)
+        self.supported_styles = self.ist.get_supported_styles()
 
     def _toggle_verbose(self):
         self.verbose_logging = self.verbose_var.get()
@@ -212,7 +200,7 @@ class CodeTransformerGUI:
         return code_snippets
 
     def _transform_dataset(self, code_snippets: List[dict], transformations: List[str], code_field: str) -> List[dict]:
-        transformed_snippets = code_snippets.copy()
+        transformed_snippets = [item.copy() for item in code_snippets]
         total_converted = 0
         conversions_per_style = {style: 0 for style in transformations}
 
@@ -225,24 +213,18 @@ class CodeTransformerGUI:
                 if not code.strip():
                     current_snippets.append(item)
                     continue
-                style_count = self.ist.get_style(code=code, styles=[style]).get(style, 0)
-                if style_count > 0:
-                    new_code, success = self.ist.transfer(styles=[style], code=code)
-                    if success:
-                        new_item = item.copy()
-                        new_item[code_field] = new_code
-                        current_snippets.append(new_item)
-                        converted_count += 1
-                        if self.verbose_logging:
-                            self.logger.debug(f"Function (idx: {item.get('idx', 'N/A')}): Applied {style} successfully")
-                    else:
-                        current_snippets.append(item)
-                        if self.verbose_logging:
-                            self.logger.debug(f"Function (idx: {item.get('idx', 'N/A')}): Failed to apply {style}")
+                new_code, success = self.ist.transfer(styles=[style], code=code)
+                if success and new_code != code:
+                    new_item = item.copy()
+                    new_item[code_field] = new_code
+                    current_snippets.append(new_item)
+                    converted_count += 1
+                    if self.verbose_logging:
+                        self.logger.debug(f"Function (idx: {item.get('idx', 'N/A')}): Applied {style} successfully")
                 else:
                     current_snippets.append(item)
                     if self.verbose_logging:
-                        self.logger.debug(f"Function (idx: {item.get('idx', 'N/A')}): No {style} found")
+                        self.logger.debug(f"Function (idx: {item.get('idx', 'N/A')}): No change for {style}")
 
             transformed_snippets = current_snippets
             conversions_per_style[style] = converted_count
@@ -271,7 +253,9 @@ class CodeTransformerGUI:
         return final_snippets
 
     def _process_for_training(self, transformed_snippets: List[dict], output_path: str, output_format: str):
-        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        output_dir = os.path.dirname(output_path)
+        if output_dir:
+            os.makedirs(output_dir, exist_ok=True)
         if output_format == "jsonl":
             with open(output_path, "w", encoding="utf-8") as f:
                 for item in transformed_snippets:
@@ -280,6 +264,8 @@ class CodeTransformerGUI:
             df = pd.DataFrame(transformed_snippets)
             df.to_csv(output_path, index=False)
         elif output_format == "dataset":
+            if not transformed_snippets:
+                raise ValueError("Cannot save an empty dataset.")
             features_dict = {
                 k: Value("string") for k in transformed_snippets[0].keys()
             }
@@ -323,8 +309,10 @@ class CodeTransformerGUI:
             self.logger.error(f"Transformation failed: {str(e)}")
 
 def run_gui():
+    if tk is None:
+        raise RuntimeError("Tkinter is required for GUI mode. Use CLI arguments for headless mode.")
     root = tk.Tk()
-    app = CodeTransformerGUI(root)
+    CodeTransformerGUI(root)
     root.mainloop()
 
 def run_command_line():
@@ -333,8 +321,8 @@ def run_command_line():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Usage examples:
-  python code_transformer_gui.py --dpath train.jsonl --trans 11.1 9.2
-  python code_transformer_gui.py --dpath train.jsonl --trans 11.1 --lang java --fields func,target --output_format csv --verbose
+  python BatchSample_Generator.py --dpath train.jsonl --trans 11.1 9.2
+  python BatchSample_Generator.py --dpath train.jsonl --trans 11.1 --lang java --fields func target --output_format csv --verbose
 
 See 'user_manual.md' for detailed instructions.
 """
@@ -355,7 +343,7 @@ See 'user_manual.md' for detailed instructions.
                         help="Enable verbose logging")
     args = parser.parse_args()
 
-    transformer = CodeTransformerGUI(tk.Tk())
+    transformer = CodeTransformerGUI(init_gui=False)
     transformer.dataset_file = args.dpath
     transformer.transformations = args.trans
     transformer.code_field = args.code_field
@@ -363,6 +351,9 @@ See 'user_manual.md' for detailed instructions.
     transformer.verbose_logging = args.verbose
     transformer.output_format = args.output_format
     transformer.logger.setLevel(logging.DEBUG if args.verbose else logging.INFO)
+
+    transformer.ist = IST(args.lang)
+    transformer.supported_styles = transformer.ist.get_supported_styles()
 
     # Validate transformations
     supported_styles = transformer.supported_styles
@@ -390,7 +381,6 @@ See 'user_manual.md' for detailed instructions.
     if transformer.code_field not in transformer.selected_fields:
         transformer.selected_fields.append(transformer.code_field)
 
-    transformer.ist = IST(args.lang)
     code_snippets = transformer._fetch_codexglue_jsonl_dataset(args.dpath, args.code_field)
     transformed_snippets = transformer._transform_dataset(code_snippets, args.trans, args.code_field)
     transformer._process_for_training(transformed_snippets, transformer.output_path, args.output_format)

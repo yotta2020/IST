@@ -162,9 +162,13 @@ class IST:
                     continue
             raw_code = code
             # if self.get_style(code, style)[style] > 0: return code, 1
-            if style in self.exclude[self.language]:
+            if not self.is_supported_style(style):
+                raise ValueError(
+                    f"Style {style} is not fully implemented for {self.language}."
+                )
+            if style.split(".")[0] in self.exclude[self.language]:
                 continue
-            if style in self.need_bracket:
+            if style.split(".")[0] in self.need_bracket:
                 code, _ = self.transfer(["1.2"], code)
             if style.split(".")[0] == "10":
                 code, _ = self.transfer(["11.1"], code)
@@ -232,8 +236,12 @@ class IST:
             styles = [styles]
         res = {}
         if len(styles) == 0:
-            styles = list(self.style_dict[self.language].keys())
+            styles = self.get_supported_styles()
         for style in styles:
+            if not self.is_supported_style(style):
+                raise ValueError(
+                    f"Style {style} is not fully implemented for {self.language}."
+                )
             AST = self.parser.parse(bytes(code, encoding="utf-8"))
             (style_type, style_subtype) = self.style_dict[style]
             (_, _, count_func) = self.op[style_type][style_subtype]
@@ -242,6 +250,22 @@ class IST:
             else:
                 res[style] = count_func(AST.root_node)
         return res
+
+    def is_supported_style(self, style):
+        if style not in self.style_dict:
+            return False
+        if style.split(".")[0] in self.exclude.get(self.language, []):
+            return False
+        style_type, style_subtype = self.style_dict[style]
+        operator = self.op.get(style_type, {}).get(style_subtype)
+        return isinstance(operator, tuple) and len(operator) == 3
+
+    def get_supported_styles(self):
+        return [
+            style
+            for style in self.style_dict
+            if self.is_supported_style(style)
+        ]
 
     def tokenize(self, code):
         tree = self.parser.parse(bytes(code, "utf8"))

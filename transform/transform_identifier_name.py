@@ -3,7 +3,6 @@ import os, sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 import re
 import inflection
-from transformers import BertTokenizer
 from ist_utils import text, parent, cpp_keywords
 from transform.lang import get_lang
 import random
@@ -177,10 +176,14 @@ def sub_token(name):  # Turn a token into a subtoken
     else:
         global tokenizer
         if tokenizer is None:
-            ddir = os.path.dirname(os.path.dirname(__file__))
-            tokenizer = BertTokenizer.from_pretrained(
-                "/home/nfs/share/backdoor2023/backdoor/attack/IST/base_model/bert-base-uncase"
-            )
+            try:
+                from transformers import BertTokenizer
+
+                model_name = os.environ.get("IST_BERT_TOKENIZER", "bert-base-uncased")
+                tokenizer = BertTokenizer.from_pretrained(model_name)
+            except Exception:
+                split_at = max(1, len(name) // 2)
+                return [name[:split_at].lower(), name[split_at:].lower()]
         tokens = tokenizer.tokenize(name.lower())
         if len(tokens) == 1:
             rp = len(tokens[0]) // 2

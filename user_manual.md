@@ -8,8 +8,14 @@ The `Code Transformer` tool transforms code in JSONL datasets, applying specifie
 
 1. Install dependencies:
    ```bash
-   pip install tkinter
+   python3 -m venv .venv
+   source .venv/bin/activate
+   python -m pip install -U pip
+   python -m pip install -r requirements.txt
    ```
+
+`tkinter` is part of most Python distributions and is only required for GUI
+mode. CLI mode does not create a Tk window.
 
 ## Usage
 
@@ -42,7 +48,7 @@ python BatchSample_Generator.py
 Run:
 
 ```bash
-python BatchSample_Generator.py --dpath <input.jsonl> --trans <styles> [options]`
+python BatchSample_Generator.py --dpath <input.jsonl> --trans <styles> [options]
 ```
 **Arguments**:
 
@@ -62,7 +68,7 @@ python BatchSample_Generator.py --dpath train.jsonl --trans 11.1 9.2
 #Specify language and fields
 python BatchSample_Generator.py --dpath train.jsonl --trans 11.1 --lang java --fields func target 
 # Verbose logging 
-python BatchSample_Generator.py --dpath train.jsonl --trans 11.1 9.2 --verbose`
+python BatchSample_Generator.py --dpath train.jsonl --trans 11.1 9.2 --verbose
 ```
 **Output**:
 
@@ -89,7 +95,7 @@ Output file: train_processed.jsonl Language: c
 Total functions converted: 140 
 Transformations applied: 11.1, 9.2 
 Conversions per type: {'11.1': 80, '9.2': 60}
-Selected fields: func, target, idx`
+Selected fields: func, target, idx
 ```
 ## Notes
 

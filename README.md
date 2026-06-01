@@ -1,8 +1,21 @@
 # Environment
 
 ```
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -U pip
+python -m pip install -r requirements.txt
+```
+
+Install the Graphviz system package only if you need AST image rendering through
+`ist.see_tree(code)`:
+
+```
+# Ubuntu/Debian
 sudo apt-get install git graphviz graphviz-doc
-pip install -r requirements.txt
+
+# macOS
+brew install graphviz
 ```
 
 ## for windows
@@ -83,4 +96,23 @@ or provide them directly
 ```
 python BatchSample_Generator.py --dpath "./dataset/programs/C" --trans 11.1 9.2 
 ```
-You can get detailed usage through our user [manul](./user_manual.md)
+You can get detailed usage through our user [manual](./user_manual.md)
+
+## Smoke test with HumanEval-X
+
+The repository includes a helper for creating a small local JSONL sample from
+`zai-org/humaneval-x`. The generated JSONL files are ignored by git.
+
+```
+python scripts/download_humanevalx_sample.py --language java --limit 5
+python BatchSample_Generator.py \
+    --dpath dataset/humanevalx_java_sample.jsonl \
+    --trans 1.2 \
+    --lang java \
+    --code_field func \
+    --fields task_id language func \
+    --opath dataset/processed_data/humanevalx_java_sample_1_2.jsonl
+```
+
+Expected output includes `Processed 5 functions.` and a non-zero conversion
+count when at least one sample matches the selected transformation.

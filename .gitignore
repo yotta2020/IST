@@ -1,5 +1,13 @@
 __pycache__/
+*.py[cod]
+.venv/
+.DS_Store
 base_model/
 build/
 data/
+dataset/processed_data/
+transform.log
+AST
+AST.*
 *.jsonl
+*/.DS_Store
